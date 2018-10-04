@@ -465,20 +465,77 @@ namespace Leap.Unity {
     }
 
     public void GetFrameData(Frame currFrame) {
-      List<Hand> hands = currFrame.Hands;
-
+      //Data included in every packet. If no hands, return empty list
+      String jsonData = "{\"Id\": "+ currFrame.Id +", \"Timestamp\": "+ currFrame.Timestamp +", \"hands\": [";
       //If any hands are detected by the Leap
-      if(hands.Count != 0) {
+      if(currFrame.Hands.Count != 0) {
         //Extract information from each hand
-        foreach(Hand hand in hands) {
-          Debug.Log(hand.Id);
-          List<Finger> fingers = hand.Fingers;
-          foreach(Finger finger in fingers) {
-            Debug.Log(finger.Type);
+        foreach(Hand hand in currFrame.Hands) {
+          //If a hand is detected, append its ID and a list of fingers
+          /*Debug.Log("Hand: " + hand.Id +
+                    ", PalmPosition" + hand.PalmPosition.ToString() +
+                    ", PalmVelocity" + hand.PalmVelocity.ToString() +
+                    ", PalmNormal" + hand.PalmNormal.ToString() +
+                    ", Direction" + hand.Direction.ToString() +
+                    ", WristPosition" + hand.WristPosition.ToString());*/
+          /*Debug.Log("Arm: " +
+                    ", Center: " + hand.Arm.Center.ToString() +
+                    ", Rotation: " + hand.Arm.Rotation.ToString() +
+                    ", PrevJoint: " + hand.Arm.PrevJoint.ToString() +
+                    ", NextJoint: " + hand.Arm.NextJoint.ToString() +
+                    ", Direction: " + hand.Arm.Direction.ToString() +
+                    ", Direction: " + hand.Arm.ElbowPosition.ToString());*/
+          jsonData += "{\"handId\":" + hand.Id +
+                      ", \"PalmPosition\":\""+ hand.PalmPosition.ToString() + "\"" +
+                      ", \"PalmVelocity\":\""+ hand.PalmVelocity.ToString() + "\"" +
+                      ", \"PalmNormal\":\""+ hand.PalmNormal.ToString() + "\"" +
+                      ", \"Direction\":\""+ hand.Direction.ToString() + "\"" +
+                      ", \"WristPosition\":\""+ hand.WristPosition.ToString() + "\"" +
+                      ", \"Arm\":{" +
+                      "\"Center\":\"" + hand.Arm.Center.ToString() + "\"" +
+                      ", \"Rotation\":\"" + hand.Arm.Rotation.ToString() + "\"" +
+                      ", \"PrevJoint\":\"" + hand.Arm.PrevJoint.ToString() + "\"" +
+                      ", \"NextJoint\":\"" + hand.Arm.NextJoint.ToString() + "\"" +
+                      ", \"Direction\":\"" + hand.Arm.Direction.ToString() + "\"" +
+                      ", \"ElbowPosition\":\"" + hand.Arm.ElbowPosition.ToString() + "\"}" +
+                      ", \"fingers\":[";
+          foreach(Finger finger in hand.Fingers) {
+            //Debug.Log(finger.Type);
+            //Debug.Log(finger.ToString());
+            /*Debug.Log("Finger: " + finger.Type +
+                      ", TipPosition: " + finger.TipPosition.ToString() +
+                      ", Direction: " + finger.Direction.ToString());*/
+            jsonData+="{\"FingerType\":\"" + finger.Type + "\"" +
+                      ", \"TipPosition\":\"" + finger.TipPosition.ToString()+ "\"" +
+                      ", \"Direction\":\"" + finger.Direction.ToString()+ "\""+
+                      ", \"Bones\":[";
+            foreach(Bone bone in finger.bones) {
+              /*Debug.Log("Bone Type: " + bone.Type +
+                        ", Center: " + bone.Center.ToString() +
+                        ", Rotation: " + bone.Rotation.ToString() +
+                        ", PrevJoint: " + bone.PrevJoint.ToString() +
+                        ", NextJoint: " + bone.NextJoint.ToString() +
+                        ", Direction: " + bone.Direction.ToString());*/
+              jsonData+="{\"BoneType\":\"" + bone.Type + "\"" +
+                        ", \"Center\":\"" + hand.Arm.Center.ToString() + "\"" +
+                        ", \"Rotation\":\"" + hand.Arm.Rotation.ToString() + "\"" +
+                        ", \"PrevJoint\":\"" + hand.Arm.PrevJoint.ToString() + "\"" +
+                        ", \"NextJoint\":\"" + hand.Arm.NextJoint.ToString() + "\"" +
+                        ", \"Direction\":\"" + hand.Arm.Direction.ToString() + "\"},";
+            }
+            jsonData = jsonData.Remove(jsonData.Length - 1);
+            jsonData+="]},";
           }
+          jsonData = jsonData.Remove(jsonData.Length - 1);
+          jsonData+="]";
 
+          jsonData+="},";
         }
       }
+      jsonData = jsonData.Remove(jsonData.Length - 1);
+      jsonData+="]}";
+      Debug.Log("Nb hands: " + CurrentFrame.Hands.Count);
+      Debug.Log(jsonData);
       Debug.Log("End of frame");
       //Debug.Log(currFrame.ToString());
     }
