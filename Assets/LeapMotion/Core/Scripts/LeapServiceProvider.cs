@@ -464,7 +464,7 @@ namespace Leap.Unity {
       }
     }
 
-    public void GetFrameData(Frame currFrame) {
+    public String GetFrameData(Frame currFrame) {
       //Data included in every packet. If no hands, return empty list
       String jsonData = "{\"Id\": "+ currFrame.Id +", \"Timestamp\": "+ currFrame.Timestamp +", \"hands\": [";
       //If any hands are detected by the Leap
@@ -537,6 +537,7 @@ namespace Leap.Unity {
       Debug.Log("Nb hands: " + CurrentFrame.Hands.Count);
       Debug.Log(jsonData);
       Debug.Log("End of frame");
+      return jsonData;
       //Debug.Log(currFrame.ToString());
     }
 
