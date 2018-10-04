@@ -10,22 +10,32 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
+
+
+
 
 namespace Leap.Unity {
   using Attributes;
 
-  /// <summary>
-  /// The LeapServiceProvider provides tracked Leap Hand data and images from the device
-  /// via the Leap service running on the client machine.
-  /// </summary>
-  public class LeapServiceProvider : LeapProvider {
+                 
+                            /// <summary>
+                         /// The LeapServiceProvider provides tracked Leap Hand data and images from the device
+                        /// via the Leap service running on the client machine.
+                        /// </summary>
+    public class LeapServiceProvider : LeapProvider {
+        int frames;
+        bool avail = true;
+        string data;
+        WebSocket w;
+        string uri = "ws://10.8.95.155:8888/ws";
+        string label = "ZoomIn";// ZoomIn    ZoomOut  Reload   No   RotD    RotG   Kick
+        #region Constants
 
-    #region Constants
-
-    /// <summary>
-    /// Converts nanoseconds to seconds.
-    /// </summary>
-    protected const double NS_TO_S = 1e-6;
+        /// <summary>
+        /// Converts nanoseconds to seconds.
+        /// </summary>
+        protected const double NS_TO_S = 1e-6;
 
     /// <summary>
     /// Converts seconds to nanoseconds.
@@ -253,14 +263,30 @@ namespace Leap.Unity {
     }
 
     protected virtual void Start() {
-      createController();
+       createController();
       _transformedUpdateFrame = new Frame();
       _transformedFixedFrame = new Frame();
       _untransformedUpdateFrame = new Frame();
       _untransformedFixedFrame = new Frame();
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     protected virtual void Update() {
+            // Début blabla de base de Leap
       if (_workerThreadProfiling) {
         LeapProfiling.Update();
       }
@@ -302,15 +328,70 @@ namespace Leap.Unity {
         DispatchUpdateFrameEvent(_transformedUpdateFrame);
       }
 
-      //TODO
-      //MANUALLY ADDED! GETS FRAME//
-      GetFrameData(CurrentFrame);
+            // Fin du blabla de base de Leap. Début de mon blabla :)
+
+            if (avail) // Attente SpaceBar
+            {
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    // Initialisation
+                    avail = false;
+                    frames = 0;
+                    data = "{\"frames\":[";
+                }
+
+            }
+            else // Recording or Sending
+            {
+                if (frames < 60) // Recording
+                {
+                    if (frames != 0) data=data+","; // Ajouter le séparateur seulement entre deux frames
+                    data=data+GetFrameData(CurrentFrame); // Ajoute le record
+                    frames++; // Maj le compteur
+                }
+                else
+                { // On a toutes nos frames
+                    data=data+"],\"nlab\":\"" + label + "\"}";
+                    // Début envoi
+                    w = new WebSocket(new Uri(uri));
+                    connect();
+                    w.SendString(data);
+                    w.Close();
+                    // Fin envoi
+                    avail = true;
+                }
+            }
+
+
+
+      
+      // Fonction de marc, retournant les json d'une frame  GetFrameData(CurrentFrame);
     }
+
+
+
+
+
+
+
+
+
+    IEnumerable connect()
+        {
+            yield return StartCoroutine(w.Connect());
+        }
+
+
+
+
+
+
+
 
     protected virtual void FixedUpdate() {
       if (_frameOptimization == FrameOptimizationMode.ReuseUpdateForPhysics) {
         DispatchFixedFrameEvent(_transformedUpdateFrame);
-        return;
+      
       }
 
       if (_useInterpolation) {
