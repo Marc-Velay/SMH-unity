@@ -18,24 +18,18 @@ using System.Collections;
 namespace Leap.Unity {
   using Attributes;
 
-                 
-                            /// <summary>
-                         /// The LeapServiceProvider provides tracked Leap Hand data and images from the device
-                        /// via the Leap service running on the client machine.
-                        /// </summary>
-    public class LeapServiceProvider : LeapProvider {
-        int frames;
-        bool avail = true;
-        string data;
-        WebSocket w;
-        string uri = "ws://10.8.95.155:8888/ws";
-        string label = "ZoomIn";// ZoomIn    ZoomOut  Reload   No   RotD    RotG   Kick
-        #region Constants
 
-        /// <summary>
-        /// Converts nanoseconds to seconds.
-        /// </summary>
-        protected const double NS_TO_S = 1e-6;
+    /// <summary>
+    /// The LeapServiceProvider provides tracked Leap Hand data and images from the device
+    /// via the Leap service running on the client machine.
+    /// </summary>
+  public class LeapServiceProvider : LeapProvider {
+    #region Constants
+
+    /// <summary>
+    /// Converts nanoseconds to seconds.
+    /// </summary>
+    protected const double NS_TO_S = 1e-6;
 
     /// <summary>
     /// Converts seconds to nanoseconds.
@@ -270,23 +264,8 @@ namespace Leap.Unity {
       _untransformedFixedFrame = new Frame();
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     protected virtual void Update() {
-            // Début blabla de base de Leap
+      // Dï¿½but blabla de base de Leap
       if (_workerThreadProfiling) {
         LeapProfiling.Update();
       }
@@ -328,57 +307,65 @@ namespace Leap.Unity {
         DispatchUpdateFrameEvent(_transformedUpdateFrame);
       }
 
-            // Fin du blabla de base de Leap. Début de mon blabla :)
+        // Fin du blabla de base de Leap. Dï¿½but de mon blabla :)
+        bool spacePressed = Input.GetKeyDown(KeyCode.Space);
+        gatherData(spacePressed, CurrentFrame);
 
-            if (avail) // Attente SpaceBar
-            {
-                if (Input.GetKeyDown(KeyCode.Space))
-                {
-                    // Initialisation
-                    avail = false;
-                    frames = 0;
-                    data = "{\"frames\":[";
-                }
-
-            }
-            else // Recording or Sending
-            {
-                if (frames < 60) // Recording
-                {
-                    if (frames != 0) data=data+","; // Ajouter le séparateur seulement entre deux frames
-                    data=data+GetFrameData(CurrentFrame); // Ajoute le record
-                    frames++; // Maj le compteur
-                }
-                else
-                { // On a toutes nos frames
-                    data=data+"],\"nlab\":\"" + label + "\"}";
-                    // Début envoi
-                    w = new WebSocket(new Uri(uri));
-                    connect();
-                    w.SendString(data);
-                    w.Close();
-                    // Fin envoi
-                    avail = true;
-                }
-            }
-
-
-
-      
       // Fonction de marc, retournant les json d'une frame  GetFrameData(CurrentFrame);
     }
 
 
+    int frames;
+    bool avail = true;
+    string data;
+    WebSocket w;
+    string uri = "ws://10.8.95.155:8888/ws";
+    string label = "ZoomIn";// ZoomIn    ZoomOut  Reload   No   RotD    RotG   Kick
+    private IEnumerator coroutine;
+
+    void gatherData(bool SpacePushed, Frame currFrame) {
+
+      if (avail) // Attente SpaceBar
+      {
+          if (SpacePushed)
+          {
+              // Initialisation
+              avail = false;
+              frames = 0;
+              data = "{\"frames\":[";
+          }
+
+      }
+      else // Recording or Sending
+      {
+          if (frames < 60) // Recording
+          {
+              if (frames != 0) data=data+","; // Ajouter le sï¿½parateur seulement entre deux frames
+              data+=GetFrameData(CurrentFrame); // Ajoute le record
+              frames++; // Maj le compteur
+          }
+          else
+          { // On a toutes nos frames
+              data=data+"],\"label\":\"" + label + "\"}";
+              Debug.Log(data);
+              // Dï¿½but envoi
+              StartCoroutine(sendDataWS(data));
+              Debug.Log("yeah this got skiped");
+              // Fin envoi
+              avail = true;
+          }
+      }
+    }
 
 
-
-
-
-
-
-    IEnumerable connect()
+    IEnumerator sendDataWS(String data)
         {
-            yield return StartCoroutine(w.Connect());
+          Debug.Log("SENDING DATA");
+          w = new WebSocket(new Uri(uri));
+          //connect();
+          yield return StartCoroutine(w.Connect());
+          w.SendString(data);
+          w.Close();
         }
 
 
@@ -391,7 +378,7 @@ namespace Leap.Unity {
     protected virtual void FixedUpdate() {
       if (_frameOptimization == FrameOptimizationMode.ReuseUpdateForPhysics) {
         DispatchFixedFrameEvent(_transformedUpdateFrame);
-      
+
       }
 
       if (_useInterpolation) {
@@ -472,19 +459,6 @@ namespace Leap.Unity {
         //Extract information from each hand
         foreach(Hand hand in currFrame.Hands) {
           //If a hand is detected, append its ID and a list of fingers
-          /*Debug.Log("Hand: " + hand.Id +
-                    ", PalmPosition" + hand.PalmPosition.ToString() +
-                    ", PalmVelocity" + hand.PalmVelocity.ToString() +
-                    ", PalmNormal" + hand.PalmNormal.ToString() +
-                    ", Direction" + hand.Direction.ToString() +
-                    ", WristPosition" + hand.WristPosition.ToString());*/
-          /*Debug.Log("Arm: " +
-                    ", Center: " + hand.Arm.Center.ToString() +
-                    ", Rotation: " + hand.Arm.Rotation.ToString() +
-                    ", PrevJoint: " + hand.Arm.PrevJoint.ToString() +
-                    ", NextJoint: " + hand.Arm.NextJoint.ToString() +
-                    ", Direction: " + hand.Arm.Direction.ToString() +
-                    ", Direction: " + hand.Arm.ElbowPosition.ToString());*/
           jsonData += "{\"handId\":" + hand.Id +
                       ", \"PalmPosition\":\""+ hand.PalmPosition.ToString() + "\"" +
                       ", \"PalmVelocity\":\""+ hand.PalmVelocity.ToString() + "\"" +
@@ -500,22 +474,11 @@ namespace Leap.Unity {
                       ", \"ElbowPosition\":\"" + hand.Arm.ElbowPosition.ToString() + "\"}" +
                       ", \"fingers\":[";
           foreach(Finger finger in hand.Fingers) {
-            //Debug.Log(finger.Type);
-            //Debug.Log(finger.ToString());
-            /*Debug.Log("Finger: " + finger.Type +
-                      ", TipPosition: " + finger.TipPosition.ToString() +
-                      ", Direction: " + finger.Direction.ToString());*/
             jsonData+="{\"FingerType\":\"" + finger.Type + "\"" +
                       ", \"TipPosition\":\"" + finger.TipPosition.ToString()+ "\"" +
                       ", \"Direction\":\"" + finger.Direction.ToString()+ "\""+
                       ", \"Bones\":[";
             foreach(Bone bone in finger.bones) {
-              /*Debug.Log("Bone Type: " + bone.Type +
-                        ", Center: " + bone.Center.ToString() +
-                        ", Rotation: " + bone.Rotation.ToString() +
-                        ", PrevJoint: " + bone.PrevJoint.ToString() +
-                        ", NextJoint: " + bone.NextJoint.ToString() +
-                        ", Direction: " + bone.Direction.ToString());*/
               jsonData+="{\"BoneType\":\"" + bone.Type + "\"" +
                         ", \"Center\":\"" + hand.Arm.Center.ToString() + "\"" +
                         ", \"Rotation\":\"" + hand.Arm.Rotation.ToString() + "\"" +
@@ -535,8 +498,8 @@ namespace Leap.Unity {
       jsonData = jsonData.Remove(jsonData.Length - 1);
       jsonData+="]}";
       Debug.Log("Nb hands: " + CurrentFrame.Hands.Count);
-      Debug.Log(jsonData);
-      Debug.Log("End of frame");
+      //Debug.Log(jsonData);
+      //Debug.Log("End of frame");
       return jsonData;
       //Debug.Log(currFrame.ToString());
     }
