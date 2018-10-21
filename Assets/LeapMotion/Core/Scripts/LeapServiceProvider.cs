@@ -319,8 +319,8 @@ namespace Leap.Unity {
     bool avail = true;
     string data;
     WebSocket w;
-    string uri = "ws://10.8.95.155:8888/ws";
-    string label = "ZoomIn";// ZoomIn    ZoomOut  Reload   No   RotD    RotG   Kick
+    string uri = "ws://10.8.95.6:8888/ws";
+    string label = "RotG"; // ZoomIn    ZoomOut  Fire   No   RotD    RotG   Kick
     private IEnumerator coroutine;
 
     void gatherData(bool SpacePushed, Frame currFrame) {
@@ -464,19 +464,33 @@ namespace Leap.Unity {
                       ", \"PalmVelocity\":\""+ hand.PalmVelocity.ToString() + "\"" +
                       ", \"PalmNormal\":\""+ hand.PalmNormal.ToString() + "\"" +
                       ", \"Direction\":\""+ hand.Direction.ToString() + "\"" +
+                      ", \"Rotation\":\""+ hand.Rotation.ToString() + "\"" +
+                      ", \"GrabStrength\":\""+ hand.GrabStrength.ToString() + "\"" +
+                      ", \"GrabAngle\":\""+ hand.GrabAngle.ToString() + "\"" +
+                      ", \"PinchStrength\":\""+ hand.PinchStrength.ToString() + "\"" +
+                      ", \"PinchDistance\":\""+ hand.PinchDistance.ToString() + "\"" +
+                      ", \"PalmWidth\":\""+ hand.PalmWidth.ToString() + "\"" +
+                      ", \"StabilizedPalmPosition\":\""+ hand.StabilizedPalmPosition.ToString() + "\"" +
                       ", \"WristPosition\":\""+ hand.WristPosition.ToString() + "\"" +
+                      ", \"Confidence\":\""+ hand.Confidence.ToString() + "\"" +
+                      ", \"isLeft\":\""+ hand.IsLeft.ToString() + "\"" +
                       ", \"Arm\":{" +
-                      "\"Center\":\"" + hand.Arm.Center.ToString() + "\"" +
-                      ", \"Rotation\":\"" + hand.Arm.Rotation.ToString() + "\"" +
-                      ", \"PrevJoint\":\"" + hand.Arm.PrevJoint.ToString() + "\"" +
-                      ", \"NextJoint\":\"" + hand.Arm.NextJoint.ToString() + "\"" +
-                      ", \"Direction\":\"" + hand.Arm.Direction.ToString() + "\"" +
-                      ", \"ElbowPosition\":\"" + hand.Arm.ElbowPosition.ToString() + "\"}" +
-                      ", \"fingers\":[";
+                          "\"Center\":\"" + hand.Arm.Center.ToString() + "\"" +
+                          ", \"Rotation\":\"" + hand.Arm.Rotation.ToString() + "\"" +
+                          ", \"PrevJoint\":\"" + hand.Arm.PrevJoint.ToString() + "\"" +
+                          ", \"NextJoint\":\"" + hand.Arm.NextJoint.ToString() + "\"" +
+                          ", \"Direction\":\"" + hand.Arm.Direction.ToString() + "\"" +
+                          ", \"Length\":\"" + hand.Arm.Length.ToString() + "\"" +
+                          ", \"Width\":\"" + hand.Arm.Width.ToString() + "\"" +
+                          ", \"ElbowPosition\":\"" + hand.Arm.ElbowPosition.ToString() + "\"}" +
+                          ", \"fingers\":[";
           foreach(Finger finger in hand.Fingers) {
             jsonData+="{\"FingerType\":\"" + finger.Type + "\"" +
                       ", \"TipPosition\":\"" + finger.TipPosition.ToString()+ "\"" +
                       ", \"Direction\":\"" + finger.Direction.ToString()+ "\""+
+                      ", \"Width\":\"" + finger.Width.ToString()+ "\""+
+                      ", \"Length\":\"" + finger.Length.ToString()+ "\""+
+                      ", \"IsExtended\":\"" + finger.IsExtended.ToString()+ "\""+
                       ", \"Bones\":[";
             foreach(Bone bone in finger.bones) {
               jsonData+="{\"BoneType\":\"" + bone.Type + "\"" +
@@ -484,6 +498,8 @@ namespace Leap.Unity {
                         ", \"Rotation\":\"" + hand.Arm.Rotation.ToString() + "\"" +
                         ", \"PrevJoint\":\"" + hand.Arm.PrevJoint.ToString() + "\"" +
                         ", \"NextJoint\":\"" + hand.Arm.NextJoint.ToString() + "\"" +
+                        ", \"Length\":\"" + hand.Arm.Length.ToString() + "\"" +
+                        ", \"Width\":\"" + hand.Arm.Width.ToString() + "\"" +
                         ", \"Direction\":\"" + hand.Arm.Direction.ToString() + "\"},";
             }
             jsonData = jsonData.Remove(jsonData.Length - 1);
@@ -495,7 +511,9 @@ namespace Leap.Unity {
           jsonData+="},";
         }
       }
-      jsonData = jsonData.Remove(jsonData.Length - 1);
+      if(CurrentFrame.Hands.Count > 0) {
+          jsonData = jsonData.Remove(jsonData.Length - 1);
+      }
       jsonData+="]}";
       Debug.Log("Nb hands: " + CurrentFrame.Hands.Count);
       //Debug.Log(jsonData);
