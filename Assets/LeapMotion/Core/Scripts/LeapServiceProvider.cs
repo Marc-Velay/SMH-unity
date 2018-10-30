@@ -320,7 +320,7 @@ namespace Leap.Unity {
     string data;
     WebSocket w;
     string uri = "ws://10.8.95.6:8888/ws";
-    string label = "RotG"; // ZoomIn    ZoomOut  Fire   No   RotD    RotG   Kick
+    string label = "RotG"; // ZoomIn    ZoomOut  Fire    RotD    RotG   Kick
     private IEnumerator coroutine;
 
     void gatherData(bool SpacePushed, Frame currFrame) {
