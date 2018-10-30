@@ -308,51 +308,37 @@ namespace Leap.Unity {
       }
 
         // Fin du blabla de base de Leap. D�but de mon blabla :)
-        bool spacePressed = Input.GetKeyDown(KeyCode.Space);
-        gatherData(spacePressed, CurrentFrame);
+        gatherData(CurrentFrame);
 
       // Fonction de marc, retournant les json d'une frame  GetFrameData(CurrentFrame);
     }
 
 
-    int frames;
-    bool avail = true;
+    int frametoskip = 1;
+    int frameskiped = 0;
     string data;
     WebSocket w;
     string uri = "ws://10.8.95.6:8888/ws";
-    string label = "RotG"; // ZoomIn    ZoomOut  Fire    RotD    RotG   Kick
     private IEnumerator coroutine;
 
-    void gatherData(bool SpacePushed, Frame currFrame) {
+    void gatherData(Frame CurrentFrame) {
 
-      if (avail) // Attente SpaceBar
-      {
-          if (SpacePushed)
-          {
-              // Initialisation
-              avail = false;
-              frames = 0;
-              data = "{\"frames\":[";
-          }
+              if(frameskiped == frametoskip)
+            {
+                data = GetFrameData(CurrentFrame); // Ajoute le record
+                Debug.Log(data);
+                // D�but envoi
+                StartCoroutine(sendDataWS(data));
+                Debug.Log("Frame sent ;D");
+                frameskiped = 0;
+            }
+            else
+            {
+                frameskiped++;
+            }
 
-      }
-      else // Recording or Sending
-      {
-          if (frames < 60) // Recording
-          {
-              if (frames != 0) data=data+","; // Ajouter le s�parateur seulement entre deux frames
-              data+=GetFrameData(CurrentFrame); // Ajoute le record
-              frames++; // Maj le compteur
-          }
-          else
-          { // On a toutes nos frames
-              data=data+"],\"label\":\"" + label + "\"}";
-              Debug.Log(data);
-              // D�but envoi
-              StartCoroutine(sendDataWS(data));
-              Debug.Log("yeah this got skiped");
-              // Fin envoi
-              avail = true;
+
+
           }
       }
     }
