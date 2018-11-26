@@ -119,6 +119,11 @@ namespace Leap.Unity {
     protected Frame _untransformedFixedFrame;
     protected Frame _transformedFixedFrame;
 
+    protected String _WS_destination_record;
+    protected String _WS_destination_pred;
+    protected WebSocket _WS_conn;
+
+
     #endregion
 
     #region Edit-time Frame Data
@@ -247,13 +252,27 @@ namespace Leap.Unity {
 
     #region Unity Events
 
+    IEnumerator startWS() {
+      yield return StartCoroutine(_WS_conn.Connect());
+    }
+
     protected virtual void Reset() {
       editTimePose = TestHandFactory.TestHandPose.DesktopModeA;
+      _WS_destination_record = "ws://10.8.95.28:8888/ws";
+      _WS_destination_pred = "ws://10.8.95.28:8888/pred";
+      Debug.Log("CREATED CONN RESET");
+      _WS_conn = new WebSocket(new Uri(_WS_destination_pred));
+      StartCoroutine(startWS());
     }
 
     protected virtual void Awake() {
       _fixedOffset.delay = 0.4f;
       _smoothedTrackingLatency.SetBlend(0.99f, 0.0111f);
+      //_WS_destination_record = "ws://10.8.95.28:8888/ws";
+      //_WS_destination_pred = "ws://10.8.95.28:8888/pred";
+      //Debug.Log("CREATED CONN AWAKE");
+      //_WS_conn = new WebSocket(new Uri(_WS_destination_pred));
+      //StartCoroutine(startWS());
     }
 
     protected virtual void Start() {
@@ -262,6 +281,11 @@ namespace Leap.Unity {
       _transformedFixedFrame = new Frame();
       _untransformedUpdateFrame = new Frame();
       _untransformedFixedFrame = new Frame();
+      _WS_destination_record = "ws://10.8.95.28:8888/ws";
+      _WS_destination_pred = "ws://10.8.95.28:8888/pred";
+      Debug.Log("CREATED CONN START");
+      _WS_conn = new WebSocket(new Uri(_WS_destination_pred));
+      StartCoroutine(startWS());
     }
 
     protected virtual void Update() {
@@ -308,134 +332,90 @@ namespace Leap.Unity {
       }
 
         // Fin du blabla de base de Leap. D�but de mon blabla :)
-        gatherData(CurrentFrame);
+        bool spacePressed = Input.GetKeyDown(KeyCode.Space);
+        gatherData(spacePressed, CurrentFrame);
+
 
       // Fonction de marc, retournant les json d'une frame  GetFrameData(CurrentFrame);
     }
 
 
-    int frametoskip = 1;
+    bool continuous = true;
+    int frametoskip = 4;
     int frameskiped = 0;
+    int frames;
+    bool avail = true;
     string data;
-    WebSocket w;
-    string uri = "ws://10.8.95.6:8888/ws";
+    string label = "RotG"; // ZoomIn    ZoomOut  Fire   No   RotD    RotG   Kick
     private IEnumerator coroutine;
 
-    void gatherData(Frame CurrentFrame) {
+    void gatherData(bool SpacePushed, Frame currFrame) {
+      if (continuous == true) {
+        gatherData_singles(CurrentFrame);
+      } else {
+        gatherData_recording(SpacePushed, CurrentFrame);
+      }
 
-              if(frameskiped == frametoskip)
-            {
-                data = GetFrameData(CurrentFrame); // Ajoute le record
-                Debug.Log(data);
-                // D�but envoi
-                StartCoroutine(sendDataWS(data));
-                Debug.Log("Frame sent ;D");
-                frameskiped = 0;
-            }
-            else
-            {
-                frameskiped++;
-            }
+    }
 
+    void gatherData_recording(bool SpacePushed, Frame currFrame) {
 
-
+      if (avail) // Attente SpaceBar
+      {
+          if (SpacePushed)
+          {
+              // Initialisation
+              avail = false;
+              frames = 0;
+              data = "{\"frames\":[";
           }
       }
+      else // Recording or Sending
+      {
+        if (frames < 60) // Recording
+        {
+            if (frames != 0) data=data+","; // Ajouter le s�parateur seulement entre deux frames
+            data+=GetFrameData(CurrentFrame); // Ajoute le record
+            frames++; // Maj le compteur
+        }
+        else
+        { // On a toutes nos frames
+            data=data+"],\"label\":\"" + label + "\"}";
+            //Debug.Log(data);
+            // D�but envoi
+            //StartCoroutine(sendDataWS(data));
+            sendDataWS(data);
+            // Fin envoi
+            avail = true;
+        }
+      }
     }
 
+    void gatherData_singles(Frame CurrentFrame) {
 
-    IEnumerator sendDataWS(String data)
-        {
-          Debug.Log("SENDING DATA");
-          w = new WebSocket(new Uri(uri));
-          //connect();
-          yield return StartCoroutine(w.Connect());
-          w.SendString(data);
-          w.Close();
-        }
-
-
-
-
-
-
-
-
-    protected virtual void FixedUpdate() {
-      if (_frameOptimization == FrameOptimizationMode.ReuseUpdateForPhysics) {
-        DispatchFixedFrameEvent(_transformedUpdateFrame);
-
-      }
-
-      if (_useInterpolation) {
-
-        long timestamp;
-        switch (_frameOptimization) {
-          case FrameOptimizationMode.None:
-            // By default we use Time.fixedTime to ensure that our hands are on the same
-            // timeline as Update.  We add an extrapolation value to help compensate
-            // for latency.
-            float extrapolatedTime = Time.fixedTime + CalculatePhysicsExtrapolation();
-            timestamp = (long)(extrapolatedTime * S_TO_NS) + _unityToLeapOffset;
-            break;
-          case FrameOptimizationMode.ReusePhysicsForUpdate:
-            // If we are re-using physics frames for update, we don't even want to care
-            // about Time.fixedTime, just grab the most recent interpolated timestamp
-            // like we are in Update.
-            timestamp = CalculateInterpolationTime() + (ExtrapolationAmount * 1000);
-            break;
-          default:
-            throw new System.InvalidOperationException(
-              "Unexpected frame optimization mode: " + _frameOptimization);
-        }
-        _leapController.GetInterpolatedFrame(_untransformedFixedFrame, timestamp);
-
+      if(frameskiped == frametoskip){
+        data = GetFrameData(CurrentFrame); // Ajoute le record
+        //Debug.Log(data);
+        // D�but envoi
+        //StartCoroutine(sendDataWS(data));
+        sendDataWS(data);
+        //Debug.Log("Frame sent ;D");
+        frameskiped = 0;
       }
       else {
-        _leapController.Frame(_untransformedFixedFrame);
-      }
-
-      if (_untransformedFixedFrame != null) {
-        transformFrame(_untransformedFixedFrame, _transformedFixedFrame);
-
-        DispatchFixedFrameEvent(_transformedFixedFrame);
+          frameskiped++;
       }
     }
 
-    protected virtual void OnDestroy() {
-      destroyController();
-      _isDestroyed = true;
-    }
+    void sendDataWS(String data)
+        {
+          Debug.Log("SENDING DATA");
+          //w = new WebSocket(new Uri(destination));
 
-    protected virtual void OnApplicationPause(bool isPaused) {
-      if (_leapController != null) {
-        if (isPaused) {
-          _leapController.StopConnection();
+          //connect();
+          _WS_conn.SendString(data);
+          //Debug.Log("I AM DYIIIING");
         }
-        else {
-          _leapController.StartConnection();
-        }
-      }
-    }
-
-    protected virtual void OnApplicationQuit() {
-      destroyController();
-      _isDestroyed = true;
-    }
-
-    public float CalculatePhysicsExtrapolation() {
-      switch (_physicsExtrapolation) {
-        case PhysicsExtrapolationMode.None:
-          return 0;
-        case PhysicsExtrapolationMode.Auto:
-          return Time.fixedDeltaTime;
-        case PhysicsExtrapolationMode.Manual:
-          return _physicsExtrapolationTime;
-        default:
-          throw new System.InvalidOperationException(
-            "Unexpected physics extrapolation mode: " + _physicsExtrapolation);
-      }
-    }
 
     public String GetFrameData(Frame currFrame) {
       //Data included in every packet. If no hands, return empty list
@@ -502,10 +482,87 @@ namespace Leap.Unity {
       }
       jsonData+="]}";
       Debug.Log("Nb hands: " + CurrentFrame.Hands.Count);
-      //Debug.Log(jsonData);
+
       //Debug.Log("End of frame");
       return jsonData;
-      //Debug.Log(currFrame.ToString());
+    }
+
+    protected virtual void FixedUpdate() {
+      if (_frameOptimization == FrameOptimizationMode.ReuseUpdateForPhysics) {
+        DispatchFixedFrameEvent(_transformedUpdateFrame);
+
+      }
+
+      if (_useInterpolation) {
+
+        long timestamp;
+        switch (_frameOptimization) {
+          case FrameOptimizationMode.None:
+            // By default we use Time.fixedTime to ensure that our hands are on the same
+            // timeline as Update.  We add an extrapolation value to help compensate
+            // for latency.
+            float extrapolatedTime = Time.fixedTime + CalculatePhysicsExtrapolation();
+            timestamp = (long)(extrapolatedTime * S_TO_NS) + _unityToLeapOffset;
+            break;
+          case FrameOptimizationMode.ReusePhysicsForUpdate:
+            // If we are re-using physics frames for update, we don't even want to care
+            // about Time.fixedTime, just grab the most recent interpolated timestamp
+            // like we are in Update.
+            timestamp = CalculateInterpolationTime() + (ExtrapolationAmount * 1000);
+            break;
+          default:
+            throw new System.InvalidOperationException(
+              "Unexpected frame optimization mode: " + _frameOptimization);
+        }
+        _leapController.GetInterpolatedFrame(_untransformedFixedFrame, timestamp);
+
+      }
+      else {
+        _leapController.Frame(_untransformedFixedFrame);
+      }
+
+      if (_untransformedFixedFrame != null) {
+        transformFrame(_untransformedFixedFrame, _transformedFixedFrame);
+
+        DispatchFixedFrameEvent(_transformedFixedFrame);
+      }
+    }
+
+    protected virtual void OnDestroy() {
+      _WS_conn.Close();
+      destroyController();
+      _isDestroyed = true;
+    }
+
+    protected virtual void OnApplicationPause(bool isPaused) {
+      if (_leapController != null) {
+        if (isPaused) {
+          _leapController.StopConnection();
+        }
+        else {
+          _leapController.StartConnection();
+        }
+      }
+    }
+
+    protected virtual void OnApplicationQuit() {
+      _WS_conn.Close();
+      destroyController();
+      _isDestroyed = true;
+    }
+
+    public float CalculatePhysicsExtrapolation() {
+      switch (_physicsExtrapolation) {
+        case PhysicsExtrapolationMode.None:
+          return 0;
+        case PhysicsExtrapolationMode.Auto:
+          return Time.fixedDeltaTime;
+        case PhysicsExtrapolationMode.Manual:
+          return _physicsExtrapolationTime;
+        default:
+          throw new System.InvalidOperationException(
+            "Unexpected physics extrapolation mode: " + _physicsExtrapolation);
+      }
     }
 
     #endregion
