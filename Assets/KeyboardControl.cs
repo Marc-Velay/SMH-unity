@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EmptyGlob : MonoBehaviour {
+public class KeyboardControl : MonoBehaviour {
 
     private float speed = 60.0f;//a speed modifie
     private bool avail = true;
