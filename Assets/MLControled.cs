@@ -5,8 +5,8 @@ using System;
 
 public class MLControled : MonoBehaviour {
 
-    float pas = 0.2f;
-    string order = null;
+    float pas = 0.8f;
+    string order = "RotD";
     WebSocket w;
     // Use this for initialization
     IEnumerator Start () {
@@ -22,17 +22,30 @@ public class MLControled : MonoBehaviour {
         // Execute order
         switch (order)
         {
+            
             case "ZoomIn":
                 transform.Translate(0,0,-pas);
                 break;
             case "ZoomOut":
                 transform.Translate(0, 0,pas);
                 break;
+            case "RotD":
+                transform.Rotate(Vector3.down * pas);
+                break;
+            case "RotG":
+                transform.Rotate(Vector3.up * pas);
+                break;
+            case "Kick":
+                transform.Rotate(Vector3.right * pas);
+                break;
+            case "NOP":
+                break;
         }
-    
 
+
+        if (order != null) Debug.Log(order);
         // Reset order
-        order = null;
+        //order = null;
     }
 
 }
