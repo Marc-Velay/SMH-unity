@@ -262,17 +262,13 @@ namespace Leap.Unity {
       _WS_destination_pred = "ws://10.8.95.28:8888/pred";
       Debug.Log("CREATED CONN RESET");
       _WS_conn = new WebSocket(new Uri(_WS_destination_pred));
+      //_WS_conn = new WebSocket(new Uri(_WS_destination_record));
       StartCoroutine(startWS());
     }
 
     protected virtual void Awake() {
       _fixedOffset.delay = 0.4f;
       _smoothedTrackingLatency.SetBlend(0.99f, 0.0111f);
-      //_WS_destination_record = "ws://10.8.95.28:8888/ws";
-      //_WS_destination_pred = "ws://10.8.95.28:8888/pred";
-      //Debug.Log("CREATED CONN AWAKE");
-      //_WS_conn = new WebSocket(new Uri(_WS_destination_pred));
-      //StartCoroutine(startWS());
     }
 
     protected virtual void Start() {
@@ -285,6 +281,7 @@ namespace Leap.Unity {
       _WS_destination_pred = "ws://10.8.95.28:8888/pred";
       Debug.Log("CREATED CONN START");
       _WS_conn = new WebSocket(new Uri(_WS_destination_pred));
+      //_WS_conn = new WebSocket(new Uri(_WS_destination_record));
       StartCoroutine(startWS());
     }
 
@@ -341,12 +338,12 @@ namespace Leap.Unity {
 
 
     bool continuous = true;
-    int frametoskip = 4;
+    int frametoskip = 2;
     int frameskiped = 0;
     int frames;
     bool avail = true;
     string data;
-    string label = "RotG"; // ZoomIn    ZoomOut  Fire   No   RotD    RotG   Kick
+    string label = "NOP"; // ZoomIn    ZoomOut  Fire   No   RotD    RotG   Kick
     private IEnumerator coroutine;
 
     void gatherData(bool SpacePushed, Frame currFrame) {
@@ -374,7 +371,7 @@ namespace Leap.Unity {
       {
         if (frames < 60) // Recording
         {
-            if (frames != 0) data=data+","; // Ajouter le s�parateur seulement entre deux frames
+            if (frames != 0) data=data+","; // Ajouter le separateur seulement entre deux frames
             data+=GetFrameData(CurrentFrame); // Ajoute le record
             frames++; // Maj le compteur
         }
@@ -414,7 +411,7 @@ namespace Leap.Unity {
 
           //connect();
           _WS_conn.SendString(data);
-          //Debug.Log("I AM DYIIIING");
+
         }
 
     public String GetFrameData(Frame currFrame) {
