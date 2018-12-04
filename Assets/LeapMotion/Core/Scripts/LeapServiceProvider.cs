@@ -25,7 +25,7 @@ namespace Leap.Unity {
     /// </summary>
   public class LeapServiceProvider : LeapProvider {
     #region Constants
-
+    public WebSocket _WS_conn;
     /// <summary>
     /// Converts nanoseconds to seconds.
     /// </summary>
@@ -121,7 +121,7 @@ namespace Leap.Unity {
 
     protected String _WS_destination_record;
     protected String _WS_destination_pred;
-    protected WebSocket _WS_conn;
+   
 
 
     #endregion
@@ -332,9 +332,6 @@ namespace Leap.Unity {
         bool spacePressed = Input.GetKeyDown(KeyCode.Space);
         gatherData(spacePressed, CurrentFrame);
 
-        order = _WS_conn.RecvString();
-        if (order != null && order != "NOP") Debug.Log("ANSWER " + order);
-
       // Fonction de marc, retournant les json d'une frame  GetFrameData(CurrentFrame);
     }
 
@@ -345,7 +342,7 @@ namespace Leap.Unity {
     int frames;
     bool avail = true;
     string data;
-    string label = "NOP"; // ZoomIn    ZoomOut  Fire   No   RotD    RotG   Kick
+    string label = ""; // ZoomIn    ZoomOut  Fire   No   RotD    RotG   Kick
     private IEnumerator coroutine;
 
     void gatherData(bool SpacePushed, Frame currFrame) {
@@ -408,7 +405,7 @@ namespace Leap.Unity {
 
     void sendDataWS(String data)
         {
-          Debug.Log("SENDING DATA");
+          //Debug.Log("SENDING DATA");
           //w = new WebSocket(new Uri(destination));
 
           //connect();
@@ -480,7 +477,7 @@ namespace Leap.Unity {
           jsonData = jsonData.Remove(jsonData.Length - 1);
       }
       jsonData+="]}";
-      Debug.Log("Nb hands: " + CurrentFrame.Hands.Count);
+      //Debug.Log("Nb hands: " + CurrentFrame.Hands.Count);
 
       //Debug.Log("End of frame");
       return jsonData;

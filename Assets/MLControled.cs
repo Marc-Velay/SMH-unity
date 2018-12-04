@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using Leap.Unity;
 
 public class MLControled : MonoBehaviour {
 
-    float pas = 0.8f;
-    string order = "RotD";
+    float pas = 1.5f;
+    string order = null;
+    public LeapServiceProvider lsp;
     WebSocket w;
     // Use this for initialization
-    IEnumerator Start () {
-        w = new WebSocket(new Uri("ws://10.8.95.155:8888/ws"));
-        yield return StartCoroutine(w.Connect());
-        //Connexion WebSocket
+    void Start () {
+        w = lsp._WS_conn;
+        //Récupération connexion WebSocket
     }
 	
 	// Update is called once per frame
@@ -24,10 +25,10 @@ public class MLControled : MonoBehaviour {
         {
             
             case "ZoomIn":
-                transform.Translate(0,0,-pas);
+                if(transform.position.y < 1.5) transform.Translate(0,0,+pas);
                 break;
             case "ZoomOut":
-                transform.Translate(0, 0,pas);
+                if(transform.position.y > -1) transform.Translate(0, 0,-pas);
                 break;
             case "RotD":
                 transform.Rotate(Vector3.down * pas);
@@ -37,6 +38,9 @@ public class MLControled : MonoBehaviour {
                 break;
             case "Kick":
                 transform.Rotate(Vector3.right * pas);
+                break;
+            case "Fire":
+                transform.position = new Vector3(0, 0, 0);
                 break;
             case "NOP":
                 break;
