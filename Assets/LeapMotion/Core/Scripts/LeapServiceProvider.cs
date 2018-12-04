@@ -332,11 +332,13 @@ namespace Leap.Unity {
         bool spacePressed = Input.GetKeyDown(KeyCode.Space);
         gatherData(spacePressed, CurrentFrame);
 
+        order = _WS_conn.RecvString();
+        if (order != null && order != "NOP") Debug.Log("ANSWER " + order);
 
       // Fonction de marc, retournant les json d'une frame  GetFrameData(CurrentFrame);
     }
 
-
+    string order;
     bool continuous = true;
     int frametoskip = 2;
     int frameskiped = 0;
