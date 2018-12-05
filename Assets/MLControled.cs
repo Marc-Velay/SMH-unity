@@ -6,8 +6,8 @@ using Leap.Unity;
 
 public class MLControled : MonoBehaviour {
 
-    float pas = 1.5f;
-    string order = null;
+    float pas = 0.5f;
+    string order = "Kick";
     public LeapServiceProvider lsp;
     WebSocket w;
     // Use this for initialization
@@ -25,10 +25,10 @@ public class MLControled : MonoBehaviour {
         {
             
             case "ZoomIn":
-                if(transform.position.y < 1.5) transform.Translate(0,0,+pas);
+                if(transform.position.z < 1) transform.Translate(0,0,+pas);
                 break;
             case "ZoomOut":
-                if(transform.position.y > -1) transform.Translate(0, 0,-pas);
+                if(transform.position.z > -1) transform.Translate(0, 0,-pas);
                 break;
             case "RotD":
                 transform.Rotate(Vector3.down * pas);
@@ -40,7 +40,7 @@ public class MLControled : MonoBehaviour {
                 transform.Rotate(Vector3.right * pas);
                 break;
             case "Fire":
-                transform.position = new Vector3(0, 0, 0);
+                transform.Translate(0, 0, -(transform.position.z));
                 break;
             case "NOP":
                 break;
@@ -49,7 +49,7 @@ public class MLControled : MonoBehaviour {
 
         if (order != null) Debug.Log(order);
         // Reset order
-        //order = null;
+        order = null;
     }
 
 }
