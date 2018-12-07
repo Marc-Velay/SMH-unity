@@ -37,10 +37,10 @@ public class MLControled : MonoBehaviour {
                 transform.Rotate(Vector3.up * pas);
                 break;
             case "Kick":
-                transform.Rotate(Vector3.right * pas);
+                transform.Rotate(Vector3.right * 2.5f);
                 break;
             case "Fire":
-                transform.Translate(0, 0, -(transform.position.z));
+               // transform.Translate(0, 0, -(transform.position.z));
                 break;
             case "NOP":
                 break;
