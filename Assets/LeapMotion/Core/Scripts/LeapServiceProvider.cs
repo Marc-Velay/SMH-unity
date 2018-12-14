@@ -456,13 +456,13 @@ namespace Leap.Unity {
                       ", \"Bones\":[";
             foreach(Bone bone in finger.bones) {
               jsonData+="{\"BoneType\":\"" + bone.Type + "\"" +
-                        ", \"Center\":\"" + hand.Arm.Center.ToString() + "\"" +
-                        ", \"Rotation\":\"" + hand.Arm.Rotation.ToString() + "\"" +
-                        ", \"PrevJoint\":\"" + hand.Arm.PrevJoint.ToString() + "\"" +
-                        ", \"NextJoint\":\"" + hand.Arm.NextJoint.ToString() + "\"" +
-                        ", \"Length\":\"" + hand.Arm.Length.ToString() + "\"" +
-                        ", \"Width\":\"" + hand.Arm.Width.ToString() + "\"" +
-                        ", \"Direction\":\"" + hand.Arm.Direction.ToString() + "\"},";
+                        ", \"Center\":\"" + bone.Center.ToString() + "\"" +
+                        ", \"Rotation\":\"" + bone.Rotation.ToString() + "\"" +
+                        ", \"PrevJoint\":\"" + bone.PrevJoint.ToString() + "\"" +
+                        ", \"NextJoint\":\"" + bone.NextJoint.ToString() + "\"" +
+                        ", \"Length\":\"" + bone.Length.ToString() + "\"" +
+                        ", \"Width\":\"" + bone.Width.ToString() + "\"" +
+                        ", \"Direction\":\"" + bone.Direction.ToString() + "\"},";
             }
             jsonData = jsonData.Remove(jsonData.Length - 1);
             jsonData+="]},";
