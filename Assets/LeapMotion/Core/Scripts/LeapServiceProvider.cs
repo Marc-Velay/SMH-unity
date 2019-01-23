@@ -121,7 +121,7 @@ namespace Leap.Unity {
 
     protected String _WS_destination_record;
     protected String _WS_destination_pred;
-   
+
 
 
     #endregion
@@ -261,8 +261,8 @@ namespace Leap.Unity {
       _WS_destination_record = "ws://10.8.95.28:8888/ws";
       _WS_destination_pred = "ws://10.8.95.28:8888/pred";
       Debug.Log("CREATED CONN RESET");
-      _WS_conn = new WebSocket(new Uri(_WS_destination_pred));
-      //_WS_conn = new WebSocket(new Uri(_WS_destination_record));
+//      _WS_conn = new WebSocket(new Uri(_WS_destination_pred));
+      _WS_conn = new WebSocket(new Uri(_WS_destination_record));
       StartCoroutine(startWS());
     }
 
@@ -280,8 +280,8 @@ namespace Leap.Unity {
       _WS_destination_record = "ws://10.8.95.28:8888/ws";
       _WS_destination_pred = "ws://10.8.95.28:8888/pred";
       Debug.Log("CREATED CONN START");
-      _WS_conn = new WebSocket(new Uri(_WS_destination_pred));
-      //_WS_conn = new WebSocket(new Uri(_WS_destination_record));
+//      _WS_conn = new WebSocket(new Uri(_WS_destination_pred));
+      _WS_conn = new WebSocket(new Uri(_WS_destination_record));
       StartCoroutine(startWS());
     }
 
@@ -336,13 +336,13 @@ namespace Leap.Unity {
     }
 
     string order;
-    bool continuous = true;
-    int frametoskip = 2;
+    bool continuous = false;
+    int frametoskip = 0;
     int frameskiped = 0;
     int frames;
     bool avail = true;
     string data;
-    string label = ""; // ZoomIn    ZoomOut  Fire   No   RotD    RotG   Kick
+    string label = "NOP"; // ZoomIn    ZoomOut  Fire   NOP   RotD    RotG   Kick
     private IEnumerator coroutine;
 
     void gatherData(bool SpacePushed, Frame currFrame) {
@@ -380,6 +380,7 @@ namespace Leap.Unity {
             //Debug.Log(data);
             // D�but envoi
             //StartCoroutine(sendDataWS(data));
+
             sendDataWS(data);
             // Fin envoi
             avail = true;
@@ -409,6 +410,7 @@ namespace Leap.Unity {
           //w = new WebSocket(new Uri(destination));
 
           //connect();
+          Debug.Log("Sending data");
           _WS_conn.SendString(data);
 
         }
