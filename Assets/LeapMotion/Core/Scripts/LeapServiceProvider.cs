@@ -261,8 +261,8 @@ namespace Leap.Unity {
       _WS_destination_record = "ws://10.8.95.28:8888/ws";
       _WS_destination_pred = "ws://10.8.95.28:8888/pred";
       Debug.Log("CREATED CONN RESET");
-//      _WS_conn = new WebSocket(new Uri(_WS_destination_pred));
-      _WS_conn = new WebSocket(new Uri(_WS_destination_record));
+      _WS_conn = new WebSocket(new Uri(_WS_destination_pred));
+//      _WS_conn = new WebSocket(new Uri(_WS_destination_record));
       StartCoroutine(startWS());
     }
 
@@ -280,8 +280,8 @@ namespace Leap.Unity {
       _WS_destination_record = "ws://10.8.95.28:8888/ws";
       _WS_destination_pred = "ws://10.8.95.28:8888/pred";
       Debug.Log("CREATED CONN START");
-//      _WS_conn = new WebSocket(new Uri(_WS_destination_pred));
-      _WS_conn = new WebSocket(new Uri(_WS_destination_record));
+      _WS_conn = new WebSocket(new Uri(_WS_destination_pred));
+//      _WS_conn = new WebSocket(new Uri(_WS_destination_record));
       StartCoroutine(startWS());
     }
 
@@ -336,9 +336,9 @@ namespace Leap.Unity {
     }
 
     string order;
-    bool continuous = false;
-    int frametoskip = 0;
-    int frameskiped = 0;
+    bool continuous = true;
+    double frametoskip = 1;
+    double frameskiped = 0;
     int frames;
     bool avail = true;
     string data;
